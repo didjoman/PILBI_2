@@ -1,0 +1,314 @@
+import org.openhab.core.library.types.*
+import org.openhab.core.persistence.*
+import org.openhab.model.script.actions.*
+import org.openhab.model.script.actions.Timer
+
+var String USER_EMAIL = "alexrupp@free.fr"
+// var String USER_EMAIL = "raphaellaguerre75@gmail.com"
+
+var Number counter = 1
+var Timer timer = null
+
+var Timer timerPanOnHotplate = null
+var Timer timerHotplateWithoutPan = null
+var Timer timerAbsence = null
+
+var Number presence = 0
+var Number hotplateHotWithPan = 0
+
+/**
+ * Light up the arduino light at start up.
+ */
+
+rule "Open light1"
+     when
+	System started
+     then
+     	   /* At the beginning shut every light */
+	   postUpdate(Led1, OFF)
+	   postUpdate(Led2, ON)
+
+	/* sendCommand(Arduino, "SET Led1 ON;") */
+	/* sendMail(USER_EMAIL, "Test", "This is the message.") */
+end
+
+
+/**
+ * Arduino -> Openhab
+ */
+rule "Mail Box"
+  when Item Arduino received update then
+       /*1585 1570*/
+      var String state = Arduino.state.toString
+
+      //      logInfo("MailBox", "Arduino state: " + Arduino.state) 
+      if (state.contains("MailboxOpenedDoor")){ 
+	println("DEBUG: Door opened.");
+      } else if(state.contains("MailboxHeight")){
+      	var int EMPTY = 2090;
+	var int LETTER = 2030;
+
+	var int valuePos = state.indexOf(":")+1
+    	var int height = Integer::parseInt(state.mid(valuePos, state.indexOf(';')-valuePos))
+	println("DEBUG: Mailbox height: "+height)
+	var String mailboxState = ""
+
+	if(height >= EMPTY){
+	   mailboxState = "Empty mailbox"
+	   postUpdate(Led1, OFF)
+	   postUpdate(Led2, OFF)
+	} else if(height >= LETTER){
+	   mailboxState = "Letter detected"
+     	   sendMail(USER_EMAIL, "[Boite_Aux_Lettres] Lettre reçue", "Bonjour,\n Une lettre vous attend dans la boite au lettre." +
+	   					     	    	    "\n Cordialement,\n Votre Boite Au Lettre.")
+	   postUpdate(Led1, ON)
+	   postUpdate(Led2, OFF)
+	} else {
+	   mailboxState = "Package detected"
+     	   sendMail(USER_EMAIL, "[Boite_Aux_Lettres] Colis reçu", "Bonjour,\n Un colis vous attend dans la boite au lettre." +
+	   					     	    	    "\n Cordialement,\n Votre Boite Au Lettre.")
+	   postUpdate(Led1, OFF)
+	   postUpdate(Led2, ON)
+	}
+
+	println("Mailbox: " + mailboxState)
+        postUpdate(Mailbox, mailboxState)
+      
+      } else if(state.contains("MailboxLightDetected")){      
+	println("DEBUG: Light detected.")
+      }
+  end
+
+
+/**
+ * Arduino -> Openhab
+ */
+rule "Switch Led1"
+when 
+Item Led1 received update
+then
+sendCommand(Arduino, "SET Led1 " + (if(Led1.state == ON) "ON;" else "OFF;"))
+println("ok : Arduino received update " + Led1.state)
+end
+
+rule "Switch Led2"
+when 
+Item Led2 received update
+then
+sendCommand(Arduino, "SET Led2 " + (if(Led2.state == ON) "ON;" else "OFF;"))
+println("ok : Arduino received update " + Led2.state)
+end
+
+
+rule Timer
+when
+/* Item Hotplate changed */
+Item Hotplate received update
+then
+	var Number TIME_LIMIT_HOTPLATE_WITH_PAN = 1 /* 30 */
+	var Number TIME_LIMIT_HOTPLATE_WITHOUT_PAN = 1
+	var Number TIME_LIMIT_ABSENCE = 1
+
+	/* Hotplate is ON && there is nothing on it : */
+	if(Hotplate.state.toString.trim == "HotWithoutPan"){
+	        hotplateHotWithPan = 0
+		sendCommand(AlarmHotplateLed,OFF) 
+
+		if(timerHotplateWithoutPan == null) {
+		        /* Cancel timer that detects a pan staying too much time on the hotplate */
+			if(timerPanOnHotplate != null && timerPanOnHotplate.cancel()) {
+				timerPanOnHotplate = null
+				println("DEBUG: [Timer Canceled] ["+TIME_LIMIT_HOTPLATE_WITH_PAN+"min] (Hotplate hot with pan)")
+			}
+
+			/* Starts timer to shutdown the hotplane after 2mins */
+			println("DEBUG: [Timer Started] ["+TIME_LIMIT_HOTPLATE_WITHOUT_PAN+"min] (Hotplate hot without pan)")
+			timerHotplateWithoutPan = createTimer(now.plusMinutes(TIME_LIMIT_HOTPLATE_WITHOUT_PAN)) [|
+				timerHotplateWithoutPan = null
+				
+				sendCommand(Hotplate, "HotplateOff")
+				println("DEBUG: [Timer Ended] ["+TIME_LIMIT_HOTPLATE_WITHOUT_PAN+"min] (Hotplate hot without pan) : hotplate deactivated")
+			]
+		}
+		else{
+			println("DEBUG: [MSG RECEIVED] (HotWithoutPan) : A timer is still running")
+		}
+	}
+
+	if (Hotplate.state.toString.trim == "HotWithPan") {
+	     println("DEBUG: [MSG RECEIVED] (HotWithPan) : The hotplate is hot with a pan on it.")
+	     hotplateHotWithPan = 1
+
+	     /* Cancel timer that detects a hotplate without pan. */
+	     if(timerHotplateWithoutPan != null && timerHotplateWithoutPan.cancel()) {
+			timerHotplateWithoutPan = null
+			println("DEBUG: [Timer Canceled] ["+TIME_LIMIT_HOTPLATE_WITHOUT_PAN+"min] (Hotplate hot without pan)")
+	     }
+
+	}
+
+	/* Hotplate is on AND there is a pan on it */
+	if (Hotplate.state.toString.trim == "HotWithPanWhitoutPresence") {
+	        if(timerPanOnHotplate == null) {
+			/* Starts a timer to detect a pan staying too much time on the hotplate */
+			println("DEBUG: [Timer Started] ["+TIME_LIMIT_HOTPLATE_WITH_PAN+"min] (Hotplate hot with pan)")
+			timerPanOnHotplate = createTimer(now.plusMinutes(TIME_LIMIT_HOTPLATE_WITHOUT_PAN)) [|
+				timerPanOnHotplate = null
+				sendCommand(AlarmHotplateLed,ON) 
+				println("DEBUG: [Timer Ended] ["+TIME_LIMIT_HOTPLATE_WITH_PAN+"min] (Hotplate hot with pan) : Light alarm activated")
+			]
+		} else {
+			println("DEBUG: [MSG RECEIVED] (HotWithPanWithoutPresence : A timer is still running")
+		}
+	} 
+	
+	/* Presence detected */
+	if(Hotplate.state.toString.trim == "PresenceDetected"){
+
+	     /* Re-schedule the timer if there was one */
+	     if(timerPanOnHotplate != null){
+	     	timerPanOnHotplate.reschedule(now.plusMinutes(TIME_LIMIT_HOTPLATE_WITH_PAN))
+		println("DEBUG: [Timer Re-scheduled] ["+TIME_LIMIT_HOTPLATE_WITH_PAN+"min] (Hotplate hot with pan)")
+	     }
+	     
+	     /* If there was an alarm, stop it */
+	     if(AlarmHotplateLed.state == ON){
+	     	sendCommand(AlarmHotplateLed,OFF) 
+		println("DEBUG: [Light Alarm Stopped] (Hotplate hot with pan)")
+	     }
+
+	     /* Start or Restart timer of absence */
+	     if(timerAbsence != null && timerAbsence.cancel()) {
+			timerAbsence = null
+	     }
+
+	     println("DEBUG: [Timer Updated] ["+TIME_LIMIT_ABSENCE+"min] (Absence detector restarted.)")
+	     timerAbsence = createTimer(now.plusMinutes(TIME_LIMIT_ABSENCE)) [|
+			println("DEBUG: [Timer Ended] ["+TIME_LIMIT_ABSENCE+"min] (Absence) : absence detected")
+	     		if(hotplateHotWithPan == 1){
+				sendCommand(Hotplate, "HotWithPanWhitoutPresence")
+			}
+	     ]
+	}
+	
+	/* Hotplate is off */
+	if (Hotplate.state.toString.trim == "HotplateOff"){
+		println("DEBUG: [Hotplate OFF]")
+	        hotplateHotWithPan = 0
+
+	     	/* Stop all timers (except absence) : */
+		if(timerHotplateWithoutPan != null && timerHotplateWithoutPan.cancel()) {
+			timerHotplateWithoutPan = null
+			println("DEBUG: [Timer Canceled] ["+TIME_LIMIT_HOTPLATE_WITHOUT_PAN+"min] (Hotplate hot without pan)")
+		}
+		if(timerPanOnHotplate != null && timerPanOnHotplate.cancel()) {
+			timerPanOnHotplate = null
+			println("DEBUG: [Timer Canceled] ["+TIME_LIMIT_HOTPLATE_WITH_PAN+"min] (Hotplate hot with pan)")
+		}
+
+		/* Shutdown hotplate led */
+		sendCommand(HotplateLed, OFF) 		
+
+		/* Also shutdown the alert */
+		sendCommand(AlarmHotplateLed,OFF) 
+	}
+end
+
+rule "Switch HotplateLed"
+when
+Item HotplateLed received update
+then
+sendCommand(Hotplate, "SET HotplateLed " + (if(HotplateLed.state == ON) "ON;" else "OFF;"))
+println("DEBUG: [Hotplateled] received update " + HotplateLed.state)
+end
+
+
+rule "Switch AlarmHotplateLed"
+when
+Item AlarmHotplateLed received update
+then
+sendCommand(Hotplate, "SET AlarmHotplateLed " + (if(AlarmHotplateLed.state == ON) "ON;" else "OFF;"))
+println("DEBUG: [AlarmHotplateled] received update " + AlarmHotplateLed.state)
+end
+
+/* *********************************************************************************************** */
+/* ******************************************  PILLBOX  ****************************************** */
+/* *********************************************************************************************** */
+
+//Variables smart pilulier
+var Number pill_taken = 0
+
+//Règles pour le smart pilulier
+
+//Declenche l'alarme si le médicement n'a pas déjà été pris
+rule PillboxWarning
+when
+//Time cron "0 * * * * ?"
+Item Alarme_pilulier received update
+then
+println("Règle pillboxwarning")
+println("etat Alarme pilulier " + Alarme_pilulier.state)
+println("clignote si medic pas pris")
+if (pill_taken == 0) {
+   println("Warning pilbox")
+   sendCommand(Pillbox, "CLIGNOTE;")
+}
+end
+
+//Stop l'alarme à la fin d'une période de prise de médicament
+rule EndPillBoxWarning
+when
+Item Fin_periode_pilulier received update
+then
+println("règle EndPillBoxWarning")
+println("etat Fin_periode_pilulier " + Fin_periode_pilulier.state)
+println("stop clignote")
+//Si le médicament n'a pas été pris, on envoie une notification au responsable
+if (pill_taken == 0) {
+  //sendMail(USER_EMAIL, "Warning medication", "Your patient did not took his medications.") //TODO rajouter la date
+  sendCommand(Pillbox, "STOP;")
+}
+else {
+  pill_taken = 0
+}
+end
+
+
+//Enregistre la prise de médicament 
+// ou reporte une prise en trop
+rule "Pill Taken"
+when
+Item Pillbox received update
+then
+println("regle Pill Taken")
+// si la boite a ete ouverte, on enregistre la prise de médicament
+if(Pillbox.state.toString.trim == "PillTaken") {
+    if (pill_taken == 0) {
+       	  println("médicaments pris")
+          pill_taken = 1
+          sendCommand(Pillbox, "STOP;")
+    }
+    else {
+    	 println("envoyer notif trop de medoc")
+    //sendMail(USER_EMAIL, "Too much pills", "Too many pills taken by your patient.") //TODO rajouter la date
+    }
+}
+
+end
+
+
+/**
+ * Try displaying string :
+ * // TODO: To remove  + push icons
+ */
+/*
+   rule Startup
+   when 
+   System started
+   then
+   var String mailboxState = "Letter detected"
+
+   println("Mailbox: "+mailboxState)
+   postUpdate(Mailbox, mailboxState)
+   end
+ */

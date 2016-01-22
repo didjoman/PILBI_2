@@ -1,0 +1,22 @@
+sitemap projet label="PILBI House"
+{
+
+	Frame label="Mailbox" {
+		Text item=Mailbox
+		Switch item=Led1
+		Switch item=Led2
+	}
+
+  Frame label="PilBox" {
+		Switch item=Alarme_pilulier
+		Switch item=Fin_periode_pilulier
+  }
+
+	Frame label="Others"{
+		Group item=gH label="House" icon="firstfloor"
+		Group item=Outdoor icon="garden" 
+	}
+	Frame label="Date" {
+		Text item=Date
+	}
+}
