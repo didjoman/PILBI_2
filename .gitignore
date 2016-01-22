@@ -1,2 +1,8 @@
 logs
 workspace
+
+server/configuration/org.eclipse.core.runtime/
+server/configuration/org.eclipse.equinox.app/
+server/configuration/org.eclipse.osgi/
+webapps/static/uuid
+webapps/static/version
