@@ -85,7 +85,7 @@ void loop()
   /* Capteur Ultrason */
   if(getHauteur) {
     getHauteur = false;
-    for(int i = 1; i <= 2; i++) {
+    for(int i = 1; i <= 1; i++) {
       digitalWrite(trig, HIGH);
       delayMicroseconds(10);
       digitalWrite(trig, LOW);
@@ -109,22 +109,22 @@ void loop()
 	   //actions
             //digitalWrite(LED_PIN, HIGH);
             
-            if(strstr(str, "SET Led1 ON") > 0) {
+            if(strstr(str, "SET LetterLed ON") > 0) {
               digitalWrite(LED_PIN1, HIGH);
               Serial.println("Led On");
             } 
             
-            if(strstr(str, "SET Led1 OFF") > 0) {
+            if(strstr(str, "SET LetterLed OFF") > 0) {
               digitalWrite(LED_PIN1, LOW);
               //Serial.println("Led On");
             } 
             
-            if(strstr(str, "SET Led2 ON") > 0) {
+            if(strstr(str, "SET PackageLed ON") > 0) {
               digitalWrite(LED_PIN2, HIGH);
               Serial.println("Led On");
             } 
             
-            if(strstr(str, "SET Led2 OFF") > 0) {
+            if(strstr(str, "SET PackageLed OFF") > 0) {
               digitalWrite(LED_PIN2, LOW);
               //Serial.println("Led On");
             } 

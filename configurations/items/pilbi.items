@@ -11,10 +11,10 @@ Group Outdoor	(All)
 
 Group gTest	(All)
 
-Group GH_Living 	"Living Room" 	<sofa>	 	(gH)
+Group GH_Living 	"Living Room"		<sofa>	 	(gH)
 Group GH_Kitchen 	"Kitchen" 		<kitchen> 	(gH)
 Group GH_Corridor 	"Corridor" 		<corridor> 	(gH)
-Group GH_SmartPilulier 	"Smart Pilulier" 		<pilulier> 	(gH)
+Group GH_SmartPilulier 	"Smart Pilulier" 	<pilulier> 	(gH)
 
 /* Living Room Equipment */
 Switch Screen_GH_Living_Room			"Ecran"				<television>	(GH_Living)
@@ -39,13 +39,13 @@ Location DemoLocation			"Brandenburg Gate Berlin"
 
 /* Arduino */
 String Mailbox				"Mailbox"		(All) { serial="/dev/ttyACM3" } // 666 
-String Pillbox 				"Pillbox"		(All) { serial="/dev/ttyACM4" } // 667
-String Hotplate				"Hotplate"		(All) { serial="/dev/ttyACM5" } //668
+//String Pillbox 				"Pillbox"		(All) { serial="/dev/ttyACM4" } // 667
+//String Hotplate				"Hotplate"		(All) { serial="/dev/ttyACM5" } //668
 
 
 Number MailboxHeight			"Mailbox Height"	(All)
-Switch Led1				"Led1"			(gTest)
-Switch Led2				"Led2"			(gTest)
+Switch LetterLed			"LetterLed"			(gTest)
+Switch PackageLed			"PackageLed"			(gTest)
 Switch AlarmHotplateLed			"AlarmHotplateLed"	(gTest)
 Switch HotplateLed			"HotplateLed"		(gTest)
 

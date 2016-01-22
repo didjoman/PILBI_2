@@ -25,10 +25,10 @@ rule "Open light1"
 	System started
      then
      	   /* At the beginning shut every light */
-	   postUpdate(Led1, OFF)
-	   postUpdate(Led2, ON)
+	   postUpdate(LetterLed, OFF)
+	   postUpdate(PackageLed, ON)
 
-	/* sendCommand(Mailbox, "SET Led1 ON;") */
+	/* sendCommand(Mailbox, "SET LetterLed ON;") */
 	/* sendMail(USER_EMAIL, "Test", "This is the message.") */
 end
 
@@ -45,7 +45,7 @@ rule "Mail Box"
       if (state.contains("MailboxOpenedDoor")){ 
 	println("DEBUG: Door opened.");
       } else if(state.contains("MailboxHeight")){
-      	var int EMPTY = 2090;
+      	var int EMPTY = 2110;
 	var int LETTER = 2030;
 
 	var int valuePos = state.indexOf(":")+1
@@ -55,24 +55,24 @@ rule "Mail Box"
 
 	if(height >= EMPTY){
 	   mailboxState = "Empty mailbox"
-	   postUpdate(Led1, OFF)
-	   postUpdate(Led2, OFF)
+	   postUpdate(LetterLed, OFF)
+	   postUpdate(PackageLed, OFF)
 	} else if(height >= LETTER){
 	   mailboxState = "Letter detected"
      	   sendMail(USER_EMAIL, "[Boite_Aux_Lettres] Lettre reçue", "Bonjour,\n Une lettre vous attend dans la boite au lettre." +
 	   					     	    	    "\n Cordialement,\n Votre Boite Au Lettre.")
-	   postUpdate(Led1, ON)
-	   postUpdate(Led2, OFF)
+	   postUpdate(LetterLed, ON)
+	   postUpdate(PackageLed, OFF)
 	} else {
 	   mailboxState = "Package detected"
      	   sendMail(USER_EMAIL, "[Boite_Aux_Lettres] Colis reçu", "Bonjour,\n Un colis vous attend dans la boite au lettre." +
 	   					     	    	    "\n Cordialement,\n Votre Boite Au Lettre.")
-	   postUpdate(Led1, OFF)
-	   postUpdate(Led2, ON)
+	   postUpdate(LetterLed, OFF)
+	   postUpdate(PackageLed, ON)
 	}
 
 	println("Mailbox: " + mailboxState)
-        postUpdate(Mailbox, mailboxState)
+        postUpdate(MailboxText, mailboxState)
       
       } else if(state.contains("MailboxLightDetected")){      
 	println("DEBUG: Light detected.")
@@ -83,20 +83,20 @@ rule "Mail Box"
 /**
  * Mailbox -> Openhab
  */
-rule "Switch Led1"
+rule "Switch LetterLed"
 when 
-Item Led1 received update
+Item LetterLed received update
 then
-sendCommand(Mailbox, "SET Led1 " + (if(Led1.state == ON) "ON;" else "OFF;"))
-println("ok : Mailbox received update " + Led1.state)
+sendCommand(Mailbox, "SET LetterLed " + (if(LetterLed.state == ON) "ON;" else "OFF;"))
+println("ok : Mailbox received update " + LetterLed.state)
 end
 
-rule "Switch Led2"
+rule "Switch PackageLed"
 when 
-Item Led2 received update
+Item PackageLed received update
 then
-sendCommand(Mailbox, "SET Led2 " + (if(Led2.state == ON) "ON;" else "OFF;"))
-println("ok : Mailbox received update " + Led2.state)
+sendCommand(Mailbox, "SET PackageLed " + (if(PackageLed.state == ON) "ON;" else "OFF;"))
+println("ok : Mailbox received update " + PackageLed.state)
 end
 
 
@@ -123,11 +123,13 @@ then
 
 			/* Starts timer to shutdown the hotplane after 2mins */
 			println("DEBUG: [Timer Started] ["+TIME_LIMIT_HOTPLATE_WITHOUT_PAN+"min] (Hotplate hot without pan)")
+			postUpdate(KitchenText, "La plaque chauffe, sans surveillance depuis moins de "+TIME_LIMIT_HOTPLATE_WITH_PAN+"min.")
 			timerHotplateWithoutPan = createTimer(now.plusMinutes(TIME_LIMIT_HOTPLATE_WITHOUT_PAN)) [|
 				timerHotplateWithoutPan = null
-				
+				postUpdate(KitchenText, "La plaque est éteinte.")
 				sendCommand(Hotplate, "HotplateOff")
 				println("DEBUG: [Timer Ended] ["+TIME_LIMIT_HOTPLATE_WITHOUT_PAN+"min] (Hotplate hot without pan) : hotplate deactivated")
+			        postUpdate(KitchenText, "La plaque chauffe, sans surveillance depuis plus de "+TIME_LIMIT_HOTPLATE_WITH_PAN+"min.")
 			]
 		}
 		else{
@@ -137,6 +139,7 @@ then
 
 	if (Hotplate.state.toString.trim == "HotWithPan") {
 	     println("DEBUG: [MSG RECEIVED] (HotWithPan) : The hotplate is hot with a pan on it.")
+	     postUpdate(KitchenText, "La casserole chauffe, sous surveillance.")
 	     hotplateHotWithPan = 1
 
 	     /* Cancel timer that detects a hotplate without pan. */
@@ -152,10 +155,12 @@ then
 	        if(timerPanOnHotplate == null) {
 			/* Starts a timer to detect a pan staying too much time on the hotplate */
 			println("DEBUG: [Timer Started] ["+TIME_LIMIT_HOTPLATE_WITH_PAN+"min] (Hotplate hot with pan)")
+			postUpdate(KitchenText, "La casserole chauffe sans surveillance (depuis moins de "+TIME_LIMIT_HOTPLATE_WITHOUT_PAN+"min.")
 			timerPanOnHotplate = createTimer(now.plusMinutes(TIME_LIMIT_HOTPLATE_WITHOUT_PAN)) [|
 				timerPanOnHotplate = null
 				sendCommand(AlarmHotplateLed,ON) 
 				println("DEBUG: [Timer Ended] ["+TIME_LIMIT_HOTPLATE_WITH_PAN+"min] (Hotplate hot with pan) : Light alarm activated")
+				postUpdate(KitchenText, "La casserole chauffe, sans surveillance, depuis plus de "+TIME_LIMIT_HOTPLATE_WITHOUT_PAN+"min.")
 			]
 		} else {
 			println("DEBUG: [MSG RECEIVED] (HotWithPanWithoutPresence : A timer is still running")
@@ -197,6 +202,7 @@ then
 	/* Hotplate is off */
 	if (Hotplate.state.toString.trim == "HotplateOff"){
 		println("DEBUG: [Hotplate OFF]")
+		postUpdate(KitchenText, "La plaque est éteinte.")
 	        hotplateHotWithPan = 0
 
 	     	/* Stop all timers (except absence) : */
@@ -319,6 +325,6 @@ end
    var String mailboxState = "Letter detected"
 
    println("Mailbox: "+mailboxState)
-   postUpdate(Mailbox, mailboxState)
+   postUpdate(MailboxText, mailboxState)
    end
  */
