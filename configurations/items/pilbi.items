@@ -41,9 +41,9 @@ Location DemoLocation			"Brandenburg Gate Berlin"
 
 //String Arduino			"Mailbox"		(All) { serial="/dev/ttyACM3" } /* > dmesg to know */
 
-String Mailbox			"Mailbox"		(All) { serial="/dev/ttyACM3" } // 666 
-String Pillbox 			"Pillbox"		(All) { serial="/dev/ttyACM4" } // 667
-String Hotplate				"Hotplate"	(All) { serial="/dev/ttyACM5" } //668
+//String Mailbox			"Mailbox"		(All) { serial="/dev/ttyACM3" } // 666 
+String Pillbox 			"Pillbox"		(All) { serial="/dev/ttyACM0" } // 667
+//String Hotplate				"Hotplate"	(All) { serial="/dev/ttyACM5" } //668
 
 
 

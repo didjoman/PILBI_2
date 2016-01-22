@@ -16,6 +16,9 @@ var Timer timerAbsence = null
 var Number presence = 0
 var Number hotplateHotWithPan = 0
 
+//Variables smart pilulier
+var Number pill_taken = 0
+
 /**
  * Light up the arduino light at start up.
  */
@@ -238,8 +241,6 @@ end
 /* ******************************************  PILLBOX  ****************************************** */
 /* *********************************************************************************************** */
 
-//Variables smart pilulier
-var Number pill_taken = 0
 
 //Règles pour le smart pilulier
 
@@ -256,10 +257,10 @@ if (pill_taken == 0) {
    println("Warning pilbox")
    //Si il y a quelqu'un dans la cuisine, on active la led du smart pilulier
    if (presence == 1) {
-    sendCommand(Pillbox, "CLIGNOTE_CUISINE;")
+    sendCommand(Pillbox, "CPIL;")
    }
    else {
-    sendCommand(Pillbox, "CLIGNOTE_SALON";)
+    sendCommand(Pillbox, "CSALON;")
    }
 }
 end
@@ -294,13 +295,13 @@ println("regle Pill Taken")
 // si la boite a ete ouverte, on enregistre la prise de médicament
 if(Pillbox.state.toString.trim == "PillTaken") {
     if (pill_taken == 0) {
-       	  println("médicaments pris")
-          pill_taken = 1
-          sendCommand(Pillbox, "STOP;")
+       println("médicaments pris")
+       pill_taken = 1
+       sendCommand(Pillbox, "STOP;")
     }
     else {
     	 println("envoyer notif trop de medoc")
-    //sendMail(USER_EMAIL, "Too much pills", "Too many pills taken by your patient.") //TODO rajouter la date
+    //sendMail(USER_EMAIL, "Too much pills", "Too many pills taken by your patient.")
     }
 }
 
