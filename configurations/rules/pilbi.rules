@@ -164,6 +164,7 @@ then
 	
 	/* Presence detected */
 	if(Hotplate.state.toString.trim == "PresenceDetected"){
+	     presence = 1
 
 	     /* Re-schedule the timer if there was one */
 	     if(timerPanOnHotplate != null){
@@ -184,6 +185,8 @@ then
 
 	     println("DEBUG: [Timer Updated] ["+TIME_LIMIT_ABSENCE+"min] (Absence detector restarted.)")
 	     timerAbsence = createTimer(now.plusMinutes(TIME_LIMIT_ABSENCE)) [|
+	     		presence = 0
+
 			println("DEBUG: [Timer Ended] ["+TIME_LIMIT_ABSENCE+"min] (Absence) : absence detected")
 	     		if(hotplateHotWithPan == 1){
 				sendCommand(Hotplate, "HotWithPanWhitoutPresence")
