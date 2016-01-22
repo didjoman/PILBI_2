@@ -11,10 +11,10 @@ Group Outdoor	(All)
 
 Group gTest	(All)
 
-Group GH_Living 	"Living Room" 	<sofa>	 	(gH)
+Group GH_Living 	"Living Room"		<sofa>	 	(gH)
 Group GH_Kitchen 	"Kitchen" 		<kitchen> 	(gH)
 Group GH_Corridor 	"Corridor" 		<corridor> 	(gH)
-Group GH_SmartPilulier 	"Smart Pilulier" 		<pilulier> 	(gH)
+Group GH_SmartPilulier 	"Smart Pilulier" 	<pilulier> 	(gH)
 
 /* Living Room Equipment */
 Switch Screen_GH_Living_Room			"Ecran"				<television>	(GH_Living)
@@ -28,31 +28,27 @@ Rollershutter SmartPillBox_GH_Kitchen	"Smart-Pilulier"	<cistern>		(GH_Kitchen)
 Contact Letterbox_Door					"Boîte aux lettres"	<cistern>		(Outdoor)
 
 /*Pilbox equipement */
-Switch Alarme_pilulier		"Alarme_pilulier"	(GH_SmartPilulier) 
+Switch Alarme_pilulier			"Alarme_pilulier"	(GH_SmartPilulier) 
 Switch Fin_periode_pilulier		"Fin_periode_pilulier"	(GH_SmartPilulier)
 
 /* NTP binding demo item */
-DateTime		Date			"Date [%1$tA, %1$td.%1$tm.%1$tY]"	<calendar>	{ ntp="Europe/Berlin:de_DE" }
+DateTime       Date			"Date [%1$tA, %1$td.%1$tm.%1$tY]"	<calendar>	{ ntp="Europe/Berlin:de_DE" }
 
 /* Locations */
 Location DemoLocation			"Brandenburg Gate Berlin"
 
 /* Arduino */
+String Mailbox				"Mailbox"		(All) { serial="/dev/ttyACM3" } // 666 
+//String Pillbox 				"Pillbox"		(All) { serial="/dev/ttyACM4" } // 667
+//String Hotplate				"Hotplate"		(All) { serial="/dev/ttyACM5" } //668
 
-//String Arduino			"Mailbox"		(All) { serial="/dev/ttyACM3" } /* > dmesg to know */
+Number MailboxHeight			"Mailbox Height"	(All)
+Switch LetterLed			"LetterLed"			(gTest)
+Switch PackageLed			"PackageLed"			(gTest)
+Switch AlarmHotplateLed			"AlarmHotplateLed"	(gTest)
+Switch HotplateLed			"HotplateLed"		(gTest)
 
-//String Mailbox			"Mailbox"		(All) { serial="/dev/ttyACM3" } // 666 
-String Pillbox 			"Pillbox"		(All) { serial="/dev/ttyACM0" } // 667
-//String Hotplate				"Hotplate"	(All) { serial="/dev/ttyACM5" } //668
-
-
-
-Number MailboxHeight		"Mailbox Height"	(All)
-Switch Led1			"Led1"			(gTest)
-Switch Led2			"Led2"			(gTest)
-Switch AlarmHotplateLed		"AlarmHotplateLed"	(gTest)
-Switch HotplateLed		"HotplateLed"		(gTest)
-
-String Mailbox "Mailbox [%s]" <'mailbox'>
+String MailboxText 			"Mailbox [%s]" <'mailbox'>
+String KitchenText 			"Kitchen [%s]" <'kitchen'>
 
 
