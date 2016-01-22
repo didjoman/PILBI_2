@@ -28,20 +28,20 @@ rule "Open light1"
 	   postUpdate(Led1, OFF)
 	   postUpdate(Led2, ON)
 
-	/* sendCommand(Arduino, "SET Led1 ON;") */
+	/* sendCommand(Mailbox, "SET Led1 ON;") */
 	/* sendMail(USER_EMAIL, "Test", "This is the message.") */
 end
 
 
 /**
- * Arduino -> Openhab
+ * Mailbox -> Openhab
  */
 rule "Mail Box"
-  when Item Arduino received update then
+  when Item Mailbox received update then
        /*1585 1570*/
-      var String state = Arduino.state.toString
+      var String state = Mailbox.state.toString
 
-      //      logInfo("MailBox", "Arduino state: " + Arduino.state) 
+      //      logInfo("MailBox", "Mailbox state: " + Mailbox.state) 
       if (state.contains("MailboxOpenedDoor")){ 
 	println("DEBUG: Door opened.");
       } else if(state.contains("MailboxHeight")){
@@ -81,22 +81,22 @@ rule "Mail Box"
 
 
 /**
- * Arduino -> Openhab
+ * Mailbox -> Openhab
  */
 rule "Switch Led1"
 when 
 Item Led1 received update
 then
-sendCommand(Arduino, "SET Led1 " + (if(Led1.state == ON) "ON;" else "OFF;"))
-println("ok : Arduino received update " + Led1.state)
+sendCommand(Mailbox, "SET Led1 " + (if(Led1.state == ON) "ON;" else "OFF;"))
+println("ok : Mailbox received update " + Led1.state)
 end
 
 rule "Switch Led2"
 when 
 Item Led2 received update
 then
-sendCommand(Arduino, "SET Led2 " + (if(Led2.state == ON) "ON;" else "OFF;"))
-println("ok : Arduino received update " + Led2.state)
+sendCommand(Mailbox, "SET Led2 " + (if(Led2.state == ON) "ON;" else "OFF;"))
+println("ok : Mailbox received update " + Led2.state)
 end
 
 
