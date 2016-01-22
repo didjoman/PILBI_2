@@ -246,7 +246,7 @@ var Number pill_taken = 0
 //Declenche l'alarme si le médicement n'a pas déjà été pris
 rule PillboxWarning
 when
-//Time cron "0 * * * * ?"
+//Time is noon
 Item Alarme_pilulier received update
 then
 println("Règle pillboxwarning")
@@ -254,13 +254,20 @@ println("etat Alarme pilulier " + Alarme_pilulier.state)
 println("clignote si medic pas pris")
 if (pill_taken == 0) {
    println("Warning pilbox")
-   sendCommand(Pillbox, "CLIGNOTE;")
+   //Si il y a quelqu'un dans la cuisine, on active la led du smart pilulier
+   if (presence == 1) {
+    sendCommand(Pillbox, "CLIGNOTE_CUISINE;")
+   }
+   else {
+    sendCommand(Pillbox, "CLIGNOTE_SALON";)
+   }
 }
 end
 
 //Stop l'alarme à la fin d'une période de prise de médicament
 rule EndPillBoxWarning
 when
+//Time is midnight
 Item Fin_periode_pilulier received update
 then
 println("règle EndPillBoxWarning")
