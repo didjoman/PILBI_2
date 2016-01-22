@@ -28,31 +28,28 @@ Rollershutter SmartPillBox_GH_Kitchen	"Smart-Pilulier"	<cistern>		(GH_Kitchen)
 Contact Letterbox_Door					"Boîte aux lettres"	<cistern>		(Outdoor)
 
 /*Pilbox equipement */
-Switch Alarme_pilulier		"Alarme_pilulier"	(GH_SmartPilulier) 
+Switch Alarme_pilulier			"Alarme_pilulier"	(GH_SmartPilulier) 
 Switch Fin_periode_pilulier		"Fin_periode_pilulier"	(GH_SmartPilulier)
 
 /* NTP binding demo item */
-DateTime		Date			"Date [%1$tA, %1$td.%1$tm.%1$tY]"	<calendar>	{ ntp="Europe/Berlin:de_DE" }
+DateTime       Date			"Date [%1$tA, %1$td.%1$tm.%1$tY]"	<calendar>	{ ntp="Europe/Berlin:de_DE" }
 
 /* Locations */
 Location DemoLocation			"Brandenburg Gate Berlin"
 
 /* Arduino */
-
-//String Arduino			"Mailbox"		(All) { serial="/dev/ttyACM3" } /* > dmesg to know */
-
-String Mailbox			"Mailbox"		(All) { serial="/dev/ttyACM3" } // 666 
-String Pillbox 			"Pillbox"		(All) { serial="/dev/ttyACM4" } // 667
-String Hotplate				"Hotplate"	(All) { serial="/dev/ttyACM5" } //668
+String Mailbox				"Mailbox"		(All) { serial="/dev/ttyACM3" } // 666 
+String Pillbox 				"Pillbox"		(All) { serial="/dev/ttyACM4" } // 667
+String Hotplate				"Hotplate"		(All) { serial="/dev/ttyACM5" } //668
 
 
+Number MailboxHeight			"Mailbox Height"	(All)
+Switch Led1				"Led1"			(gTest)
+Switch Led2				"Led2"			(gTest)
+Switch AlarmHotplateLed			"AlarmHotplateLed"	(gTest)
+Switch HotplateLed			"HotplateLed"		(gTest)
 
-Number MailboxHeight		"Mailbox Height"	(All)
-Switch Led1			"Led1"			(gTest)
-Switch Led2			"Led2"			(gTest)
-Switch AlarmHotplateLed		"AlarmHotplateLed"	(gTest)
-Switch HotplateLed		"HotplateLed"		(gTest)
-
-String Mailbox "Mailbox [%s]" <'mailbox'>
+String MailboxText 			"Mailbox [%s]" <'mailbox'>
+String KitchenText 			"Kitchen [%s]" <'kitchen'>
 
 
