@@ -45,7 +45,7 @@ void setup()
   initPins();
   initOutput();
   Serial.println("FirstMessage");
-  
+  /*
   while(mm < 1580) {
     digitalWrite(trig, HIGH);
     delayMicroseconds(10);
@@ -53,7 +53,7 @@ void setup()
     lecture_echo = pulseIn(echo, HIGH);
     mm = lecture_echo;
   }
-  
+  */
   Serial.print("MailboxHeight:");
   Serial.print(mm);
   Serial.println(";");
