@@ -48,7 +48,8 @@ Switch PackageLed			"PackageLed"			(gTest)
 Switch AlarmHotplateLed			"AlarmHotplateLed"	(gTest)
 Switch HotplateLed			"HotplateLed"		(gTest)
 
-String MailboxText 			"Mailbox [%s]" <'mailbox'>
-String KitchenText 			"Kitchen [%s]" <'kitchen'>
+String MailboxText 			"Boite aux lettres [%s]" <'mailbox'>
+String KitchenText 			"Cuisine [%s]" <'kitchen'>
+String PillboxText 			"Pilulier [%s]" <'pillbox'>
 
 

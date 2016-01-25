@@ -1,20 +1,31 @@
 sitemap projet label="PILBI House"
 {
 
-	Frame label="Mailbox" {
-		Text item=MailboxText
-		Switch item=LetterLed label="Led: Lettre"
-		Switch item=PackageLed label="Led: Colis"
+	Frame label="Smart House" {
+	      Text item=MailboxText
+	      Text item=KitchenText
+	      Text item=PillboxText
 	}
+	
+	Frame label="Maintenance" {
+	      Text label="Maintenance" icon="dev" {
+		     Frame label="Mailbox" {
+		     	   Text item=MailboxText
+		     	   Switch item=LetterLed label="Led: Lettre"
+		     	   Switch item=PackageLed label="Led: Colis"
+		     }
 
-  	Frame label="PilBox" {
-		Switch item=Alarme_pilulier label="Led: Pilule non prise"
-		Switch item=Fin_periode_pilulier label="Led: Fin de période "
-  	}
+  		     Frame label="PillBox" {
+		     	   Text item=PillboxText
+		     	   Switch item=Alarme_pilulier label="Led: Pilule non prise"
+		     	   Switch item=Fin_periode_pilulier label="Led: Fin de période "
+  		     }
 
-	Frame label="Kitchen" {
-		Text item=KitchenText
-		Switch item=AlarmHotplateLed label="Led: Casserole sur le feu"
-		Switch item=HotplateLed label="Led: Plaque allumée"
+		     Frame label="Kitchen" {
+		     	   Text item=KitchenText
+		     	   Switch item=AlarmHotplateLed label="Led: Casserole sur le feu"
+		     	   Switch item=HotplateLed label="Led: Plaque allumée"
+		     }
+	      }
 	}
 }

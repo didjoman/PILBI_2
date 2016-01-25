@@ -13,7 +13,7 @@ var Timer timerPanOnHotplate = null
 var Timer timerHotplateWithoutPan = null
 var Timer timerAbsence = null
 
-var Number presence = 1
+var Number presence = 0
 var Number hotplateHotWithPan = 0
 
 //Variables smart pilulier
@@ -27,9 +27,16 @@ rule "Open light1"
      when
 	System started
      then
-     	   /* At the beginning shut every light */
+     	   // Shut down every light
 	   postUpdate(LetterLed, OFF)
 	   postUpdate(PackageLed, OFF)
+	   postUpdate(AlarmHotplateLed, OFF)
+	   postUpdate(HotplateLed, OFF)
+
+	   // Init every states
+	   postUpdate(MailboxText, "La boite aux lettres est vide.")
+	   postUpdate(KitchenText, "La plaque est éteinte.")
+	   postUpdate(PillboxText, "Les médicaments sont disponibles.")
 
 	/* sendCommand(Mailbox, "SET LetterLed ON;") */
 	/* sendMail(USER_EMAIL, "Test", "This is the message.") */
@@ -57,17 +64,17 @@ rule "Mail Box"
 	var String mailboxState = ""
 
 	if(height >= EMPTY){
-	   mailboxState = "Empty mailbox"
+	   mailboxState = "La boite aux lettres est vide."
 	   postUpdate(LetterLed, OFF)
 	   postUpdate(PackageLed, OFF)
 	} else if(height >= LETTER){
-	   mailboxState = "Letter detected"
+	   mailboxState = "Une lettre est détectée."
      	   sendMail(USER_EMAIL, "[Boite_Aux_Lettres] Lettre reçue", "Bonjour,\n Une lettre vous attend dans la boite au lettre." +
 	   					     	    	    "\n Cordialement,\n Votre Boite Au Lettre.")
 	   postUpdate(LetterLed, ON)
 	   postUpdate(PackageLed, OFF)
 	} else {
-	   mailboxState = "Package detected"
+	   mailboxState = "Un colis est détecté."
      	   sendMail(USER_EMAIL, "[Boite_Aux_Lettres] Colis reçu", "Bonjour,\n Un colis vous attend dans la boite au lettre." +
 	   					     	    	    "\n Cordialement,\n Votre Boite Au Lettre.")
 	   postUpdate(LetterLed, OFF)
@@ -253,20 +260,22 @@ end
 rule PillboxWarning
 when
 //Time is noon
-Item Alarme_pilulier received update
+       Item Alarme_pilulier received update
 then
-println("Règle pillboxwarning")
-println("etat Alarme pilulier " + Alarme_pilulier.state)
-println("clignote si medic pas pris")
+	println("Règle pillboxwarning")
+	println("etat Alarme pilulier " + Alarme_pilulier.state)
+	println("clignote si medic pas pris")
+
 if (pill_taken == 0) {
-   println("Warning pilbox")
-   //Si il y a quelqu'un dans la cuisine, on active la led du smart pilulier
-   if (presence == 1) {
-    sendCommand(Pillbox, "CPIL;")
-   }
-   else {
-    sendCommand(Pillbox, "CSALON;")
-   }
+   	println("Warning pilbox")
+	postUpdate(PillboxText, "Il est l'heure de prendre les médicaments.")
+	//Si il y a quelqu'un dans la cuisine, on active la led du smart pilulier
+   	if (presence == 1) {
+    	   sendCommand(Pillbox, "CPIL;")
+  	}
+   	else {
+    	   sendCommand(Pillbox, "CSALON;")
+   	}
 }
 end
 
@@ -281,11 +290,13 @@ println("etat Fin_periode_pilulier " + Fin_periode_pilulier.state)
 println("stop clignote")
 //Si le médicament n'a pas été pris, on envoie une notification au responsable
 if (pill_taken == 0) {
-  //sendMail(USER_EMAIL, "Warning medication", "Your patient did not took his medications.") //TODO rajouter la date
+  sendMail(USER_EMAIL, "[Pillbox] Warning medication", "Your patient did not took his medications.")
+  postUpdate(PillboxText, "Les médicaments sont disponibles. Attention, vous avez oublié de prendre vos médicaments la dernière fois.")
   sendCommand(Pillbox, "STOP;")
 }
 else {
   pill_taken = 0
+  postUpdate(PillboxText, "Les médicaments sont disponibles.")
 }
 end
 
@@ -301,12 +312,14 @@ println("regle Pill Taken")
 if(Pillbox.state.toString.trim == "PillTaken") {
     if (pill_taken == 0) {
        println("médicaments pris")
+       postUpdate(PillboxText, "Les médicaments ont été pris.")
        pill_taken = 1
        sendCommand(Pillbox, "STOP;")
     }
     else {
     	 println("envoyer notif trop de medoc")
-    //sendMail(USER_EMAIL, "Too much pills", "Too many pills taken by your patient.")
+	 postUpdate(PillboxText, "Attention, les médicaments ont déjà été pris.")
+    	 sendMail(USER_EMAIL, "[Pillbox] Too much pills", "Too many pills taken by your patient.")
     }
 }
 
