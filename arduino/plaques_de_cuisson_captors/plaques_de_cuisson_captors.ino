@@ -18,7 +18,8 @@ int pirValue = 0;               // Variable utilisée pour lire l'entrée Pin 2 
 
 /* Capteur de pression */
 const int panPin = A0;
-int panValue;
+int old_panValue = 200;
+int panValue = 200;
 bool isWeighted = false;
 
 /* Dernier état envoyé */
@@ -65,13 +66,14 @@ void loop()
   }
 
   /* Weight */
-  panValue = analogRead(panPin);
+  old_panValue = panValue;
+  panValue = analogRead(panPin);  
   /*Serial.print("poids : ");
   Serial.println(panValue);*/
-  if(panValue > 0) {
+  if(panValue - old_panValue > 20) {
     isWeighted = true;
-  } else {
-    isWeighted = false;
+  } else if (old_panValue - panValue > 20) {
+    isWeighted = false;    
   }
 
   /* Send information */
