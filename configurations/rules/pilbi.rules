@@ -31,7 +31,7 @@ rule "Open light1"
 	   postUpdate(LetterLed, OFF)
 	   postUpdate(PackageLed, OFF)
 	   postUpdate(AlarmHotplateLed, OFF)
-	   postUpdate(HotplateLed, OFF)
+	   //postUpdate(HotplateLed, OFF)
 
 	   // Init every states
 	   postUpdate(MailboxText, "La boite aux lettres est vide.")
