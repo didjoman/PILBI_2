@@ -28,6 +28,7 @@ bool lastState[] = {false, false};
 /* Variables globales */
 char command[500];
 bool firstRead = true;
+bool firstTime = true;
 
 /* Initialize console output */
 void initOutput() {
@@ -70,6 +71,10 @@ void loop()
   panValue = analogRead(panPin);  
   /*Serial.print("poids : ");
   Serial.println(panValue);*/
+  if(firstTime) {
+    firstTime = false;
+    old_panValue = panValue;
+  }
   if(panValue - old_panValue > 20) {
     isWeighted = true;
   } else if (old_panValue - panValue > 20) {
